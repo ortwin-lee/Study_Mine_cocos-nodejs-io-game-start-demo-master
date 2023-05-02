@@ -5,17 +5,17 @@ const { ccclass, property } = _decorator;
 
 @ccclass("EntityManager")
 export abstract class EntityManager extends Component {
-  fsm: StateMachine;
-  private _state: EntityStateEnum;
+    fsm: StateMachine;
+    private _state: EntityStateEnum;
 
-  get state() {
-    return this._state;
-  }
+    get state() {
+        return this._state;
+    }
 
-  set state(newState) {
-    this._state = newState;
-    this.fsm.setParams(newState, true);
-  }
+    set state(newState) {
+        this._state = newState;
+        this.fsm.setParams(newState, true);
+    }
 
-  abstract init(...args: any[]): void;
+    abstract init(...args: any[]): void;
 }

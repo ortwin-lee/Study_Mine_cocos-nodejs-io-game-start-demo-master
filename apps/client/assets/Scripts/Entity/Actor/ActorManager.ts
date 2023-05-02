@@ -1,38 +1,63 @@
-import { _decorator, Component } from 'cc';
-import DataManager from '../../Global/DataManager';
-import { IActor, InputTypeEnum } from '../../Common';
+import { _decorator, instantiate, math } from "cc";
+import DataManager from "../../Global/DataManager";
+import { EntityTypeEnum, IActor, InputTypeEnum } from "../../Common";
+import { EntityManager } from "../../Base/EntityManager";
+import { ActorStateMachine } from "./ActorStateMachine";
+import { EntityStateEnum } from "../../Enum";
+import { WeaponManager } from "../Weapon/WeaponManager";
 const { ccclass } = _decorator;
 
-@ccclass('ActorManager')
-export class ActorManager extends Component {
-    init(data: IActor) {
+@ccclass("ActorManager")
+export class ActorManager extends EntityManager {
+    bulletType: EntityTypeEnum;
 
+    private weaponManager: WeaponManager;
+
+    init(data: IActor) {
+        this.bulletType = data.bulletType;
+        this.fsm = this.addComponent(ActorStateMachine);
+        this.fsm.init(data.type);
+
+        this.state = EntityStateEnum.Idle;
+
+        const prefab = DataManager.Instance.prefabMap.get(EntityTypeEnum.Weapon1);
+
+        const weapon = instantiate(prefab);
+        weapon.setParent(this.node);
+        this.weaponManager = weapon.addComponent(WeaponManager);
+        this.weaponManager.init(data);
     }
 
     tick(dt) {
-        if (DataManager.Instance.jm.input.length() ) {
+        if (DataManager.Instance.jm.input.length()) {
             const { x, y } = DataManager.Instance.jm.input;
             DataManager.Instance.applyInput({
                 id: 1,
                 type: InputTypeEnum.ActorMove,
                 direction: {
                     x,
-                    y
+                    y,
                 },
-                dt
+                dt,
             });
 
-            console.log(DataManager.Instance.state.actors[0].position.x, DataManager.Instance.state.actors[0].position.y);
+            this.state = EntityStateEnum.Run;
+        } else {
+            this.state = EntityStateEnum.Idle;
         }
     }
 
     render(data: IActor) {
-        const {direction, position} = data;
+        const { direction, position } = data;
         this.node.setPosition(position.x, position.y);
 
-        if(direction.x !== 0) {
+        if (direction.x !== 0) {
             this.node.setScale(direction.x > 0 ? 1 : -1, 1);
         }
+
+        const rad = Math.atan2(direction.y, Math.abs(direction.x));
+        const angle = math.toDegree(rad);
+
+        this.weaponManager.node.setRotationFromEuler(0, 0, angle);
     }
 }
-

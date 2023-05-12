@@ -11,6 +11,8 @@ export enum ParamsNameEnum {
 
 export enum EventEnum {
     WeaponShoot = "WeaponShoot",
+    ExplosionBorn = "ExplosionBorn",
+    BulletBorn = "BulletBorn",
 }
 
 export enum PrefabPathEnum {
@@ -19,6 +21,7 @@ export enum PrefabPathEnum {
     Weapon1 = "prefab/Weapon1",
     Bullet1 = "prefab/Bullet1",
     Bullet2 = "prefab/Bullet2",
+    Explosion = "prefab/Explosion",
 }
 
 export enum TexturePathEnum {
@@ -28,6 +31,7 @@ export enum TexturePathEnum {
     Weapon1Attack = "texture/weapon/weapon1/attack",
     Bullet1Idle = "texture/bullet/bullet1",
     Bullet2Idle = "texture/bullet/bullet2",
+    ExplosionIdle = "texture/explosion",
 }
 
 export enum EntityStateEnum {

@@ -1,7 +1,7 @@
 import { _decorator, Component } from "cc";
 import { EntityStateEnum } from "../Enum";
 import StateMachine from "./StateMachine";
-const { ccclass, property } = _decorator;
+const { ccclass } = _decorator;
 
 @ccclass("EntityManager")
 export abstract class EntityManager extends Component {

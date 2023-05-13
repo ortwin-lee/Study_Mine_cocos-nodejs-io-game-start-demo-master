@@ -9,7 +9,7 @@ const { ccclass } = _decorator;
 export class BulletStateMachine extends StateMachine {
     init(type: EntityTypeEnum) {
         this.type = type;
-        this.animationComponent = this.node.addComponent(Animation);
+        this.animationComponent = this.node.getComponent(Animation) || this.node.addComponent(Animation);
         this.initParams();
         this.initStateMachines();
         this.initAnimationEvent();

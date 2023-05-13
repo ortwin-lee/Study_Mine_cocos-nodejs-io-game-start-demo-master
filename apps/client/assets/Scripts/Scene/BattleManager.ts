@@ -6,6 +6,7 @@ import { ActorManager } from "../Entity/Actor/ActorManager";
 import { PrefabPathEnum, TexturePathEnum } from "../Enum";
 import { EntityTypeEnum, InputTypeEnum } from "../Common";
 import { BulletManager } from "../Entity/Bullet/BulletManager";
+import { ObjectPoolManager } from "../Global/ObjectPoolManager";
 const { ccclass } = _decorator;
 
 @ccclass("BattleManager")
@@ -66,7 +67,7 @@ export class BattleManager extends Component {
         DataManager.Instance.applyInput({
             type: InputTypeEnum.TimePast,
             dt,
-        })
+        });
     }
 
     tickActor(dt) {
@@ -90,7 +91,7 @@ export class BattleManager extends Component {
                 const prefab = DataManager.Instance.prefabMap.get(type);
                 const actor = instantiate(prefab);
                 actor.setParent(this._stage);
-                actorManager = actor.addComponent(ActorManager);
+                actorManager = actor.getComponent(ActorManager) || actor.addComponent(ActorManager);
                 DataManager.Instance.actorMap.set(id, actorManager);
                 actorManager.init(data);
             } else {
@@ -104,10 +105,9 @@ export class BattleManager extends Component {
             const { id, type } = data;
             let bulletManager = DataManager.Instance.bulletMap.get(id);
             if (!bulletManager) {
-                const prefab = DataManager.Instance.prefabMap.get(type);
-                const bullet = instantiate(prefab);
-                bullet.setParent(this._stage);
-                bulletManager = bullet.addComponent(BulletManager);
+                const bullet = ObjectPoolManager.Instance.get(type);
+
+                bulletManager = bullet.getComponent(BulletManager) || bullet.addComponent(BulletManager);
                 DataManager.Instance.bulletMap.set(id, bulletManager);
                 bulletManager.init(data);
                 bulletManager.render(data);

@@ -19,7 +19,7 @@ export class WeaponManager extends EntityManager {
         this.body = this.node.getChildByName("Body");
         this.anchor = this.body.getChildByName("Anchor");
         this.point = this.anchor.getChildByName("Point");
-        this.fsm = this.body.addComponent(WeaponStateMachine);
+        this.fsm = this.body.getComponent(WeaponStateMachine) || this.body.addComponent(WeaponStateMachine);
         this.fsm.init(data.weaponType);
 
         this.state = EntityStateEnum.Idle;

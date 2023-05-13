@@ -9,7 +9,7 @@ const { ccclass } = _decorator;
 export class ActorStateMachine extends StateMachine {
     init(type: EntityTypeEnum) {
         this.type = type;
-        this.animationComponent = this.node.addComponent(Animation);
+        this.animationComponent = this.node.getComponent(Animation) || this.node.addComponent(Animation);
         this.initParams();
         this.initStateMachines();
         this.initAnimationEvent();
@@ -25,7 +25,7 @@ export class ActorStateMachine extends StateMachine {
         this.stateMachines.set(ParamsNameEnum.Run, new State(this, `${this.type}${EntityStateEnum.Run}`, AnimationClip.WrapMode.Loop));
     }
 
-    initAnimationEvent() { }
+    initAnimationEvent() {}
 
     run() {
         switch (this.currentState) {

@@ -20,7 +20,7 @@ export class ActorManager extends EntityManager {
         this.id = data.id;
         this.hp = this.node.getComponentInChildren(ProgressBar);
         this.bulletType = data.bulletType;
-        this.fsm = this.addComponent(ActorStateMachine);
+        this.fsm = this.getComponent(ActorStateMachine) || this.addComponent(ActorStateMachine);
         this.fsm.init(data.type);
 
         this.state = EntityStateEnum.Idle;
@@ -29,7 +29,7 @@ export class ActorManager extends EntityManager {
 
         const weapon = instantiate(prefab);
         weapon.setParent(this.node);
-        this.weaponManager = weapon.addComponent(WeaponManager);
+        this.weaponManager = this.getComponent(WeaponManager) || weapon.addComponent(WeaponManager);
         this.weaponManager.init(data);
     }
 

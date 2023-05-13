@@ -11,9 +11,10 @@ export class ExplosionManager extends EntityManager {
     id: number;
 
     init(type: EntityTypeEnum, { x, y }: IVec2) {
+        this.node.active = true;
         this.node.setPosition(x, y);
         this.type = type;
-        this.fsm = this.addComponent(ExplosionStateMachine);
+        this.fsm = this.getComponent(ExplosionStateMachine) || this.addComponent(ExplosionStateMachine);
         this.fsm.init(type);
 
         this.state = EntityStateEnum.Idle;

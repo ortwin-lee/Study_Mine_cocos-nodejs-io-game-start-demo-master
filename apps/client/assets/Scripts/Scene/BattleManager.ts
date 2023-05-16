@@ -3,10 +3,12 @@ import DataManager from "../Global/DataManager";
 import { JoyStickManager } from "../UI/JoyStickManager";
 import { ResourceManager } from "../Global/ResourceManager";
 import { ActorManager } from "../Entity/Actor/ActorManager";
-import { PrefabPathEnum, TexturePathEnum } from "../Enum";
-import { EntityTypeEnum, InputTypeEnum } from "../Common";
+import { EventEnum, PrefabPathEnum, TexturePathEnum } from "../Enum";
+import { ApiMsgEnum, EntityTypeEnum, IClientInput, InputTypeEnum } from "../Common";
 import { BulletManager } from "../Entity/Bullet/BulletManager";
 import { ObjectPoolManager } from "../Global/ObjectPoolManager";
+import { NetWorkManager } from "../Global/NetWorkManager";
+import EventManager from "../Global/EventManager";
 const { ccclass } = _decorator;
 
 @ccclass("BattleManager")
@@ -16,17 +18,35 @@ export class BattleManager extends Component {
 
     private _shouldUpdate = false;
 
-    onLoad() {
+    onLoad() {}
+
+    async start() {
+        this.clearGame();
+        await Promise.all([this.connectServer(), this.loadRes()]);
+        this.initGame();
+    }
+
+    initGame() {
+        DataManager.Instance.jm = this._ui.getComponentInChildren(JoyStickManager);
+        this.initMap();
+        this._shouldUpdate = true;
+        EventManager.Instance.on(EventEnum.ClientSync, this.handleClientSync, this);
+        NetWorkManager.Instance.listenMsg(ApiMsgEnum.MsgServerSync, this.handleServerSync, this);
+    }
+
+    clearGame() {
+        EventManager.Instance.off(EventEnum.ClientSync, this.handleClientSync, this);
+        NetWorkManager.Instance.unlistenMsg(ApiMsgEnum.MsgServerSync, this.handleServerSync, this);
         DataManager.Instance.stage = this._stage = this.node.getChildByName("Stage");
         this._ui = this.node.getChildByName("UI");
         this._stage.destroyAllChildren(); // 销毁编辑器的测试节点
-        DataManager.Instance.jm = this._ui.getComponentInChildren(JoyStickManager);
     }
 
-    async start() {
-        await this.loadRes();
-        this.initMap();
-        this._shouldUpdate = true;
+    async connectServer() {
+        if (!(await NetWorkManager.Instance.connect().catch(() => false))) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await this.connectServer();
+        }
     }
 
     async loadRes() {
@@ -114,6 +134,20 @@ export class BattleManager extends Component {
             } else {
                 bulletManager.render(data);
             }
+        }
+    }
+
+    handleClientSync(input: IClientInput) {
+        const msg = {
+            input,
+            frameId: DataManager.Instance.frameId++,
+        };
+        NetWorkManager.Instance.sendMsg(ApiMsgEnum.MsgClientSync, msg);
+    }
+
+    handleServerSync({ inputs }: any) {
+        for (const input of inputs) {
+            DataManager.Instance.applyInput(input);
         }
     }
 }

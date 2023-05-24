@@ -1,5 +1,6 @@
 import { _decorator } from "cc";
 import Singleton from "../Base/Singleton";
+import { PORT } from "../Common";
 
 interface IItem {
     cb: Function;
@@ -17,22 +18,31 @@ export class NetWorkManager extends Singleton {
         return super.GetInstance<NetWorkManager>();
     }
 
-    port = 9876;
+    isConnected = false;
+    port = PORT;
     ws: WebSocket;
 
     private map: Map<string, Array<IItem>> = new Map();
 
     connect() {
         return new Promise((resolve, reject) => {
+            if (this.isConnected) {
+                resolve(true);
+                return;
+            }
+
             this.ws = new WebSocket(`ws://localhost:${this.port}`);
             this.ws.onopen = () => {
+                this.isConnected = true;
                 resolve(true);
             };
             this.ws.onclose = () => {
+                this.isConnected = false;
                 reject(false);
             };
             this.ws.onerror = e => {
                 console.log(e);
+                this.isConnected = false;
                 reject(false);
             };
             this.ws.onmessage = e => {

@@ -1,7 +1,8 @@
 import Singleton from "../Base/Singleton";
-import { IApiPlayerJoinReq } from "../Common";
+import { ApiMsgEnum, IApiPlayerJoinReq } from "../Common";
 import { Connection } from "../Core";
 import { Player } from "./Player";
+import { IPlayer } from "../Common/Api";
 
 export class PlayerManager extends Singleton {
     static get Instance() {
@@ -28,7 +29,17 @@ export class PlayerManager extends Singleton {
         }
     }
 
-    getPlayerView({ id, nickname, rid }: Player) {
+    syncPlayers() {
+        for (const player of this.players) {
+            player.connection.sendMsg(ApiMsgEnum.MsgPlayerList, { list: this.getPlayersView() });
+        }
+    }
+
+    getPlayersView(players: Set<Player> = this.players): IPlayer[] {
+        return [...players].map(p => this.getPlayerView(p));
+    }
+
+    getPlayerView({ id, nickname, rid }: Player): IPlayer {
         return { id, nickname, rid };
     }
 }

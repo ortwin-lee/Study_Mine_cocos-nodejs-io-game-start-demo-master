@@ -1,5 +1,5 @@
 import { PlayerManager } from "./Biz/PlayerManager";
-import { ApiMsgEnum, IApiPlayerJoinReq, PORT } from "./Common";
+import { ApiMsgEnum, IApiPlayerJoinReq, IApiPlayerJoinRes, IApiPlayerListReq, IApiPlayerListRes, PORT } from "./Common";
 import { Connection, MyServer } from "./Core";
 import { symlinkCommon } from "./Utils";
 import { WebSocketServer } from "ws";
@@ -22,19 +22,30 @@ server.on("connection", (connection: Connection) => {
 
 server.on("disconnection", (connection: Connection) => {
     console.log(`\n-1 ---> ${server.connections.size}`);
+
     if (connection.playerId) {
         PlayerManager.Instance.removePlayer(connection.playerId);
     }
+    PlayerManager.Instance.syncPlayers();
+
     console.log("PlayerManager.Instance.players.size --->", PlayerManager.Instance.players.size);
 });
 
-server.setApi(ApiMsgEnum.ApiPlayerJoin, (connection: Connection, data: IApiPlayerJoinReq) => {
+server.setApi(ApiMsgEnum.ApiPlayerJoin, (connection: Connection, data: IApiPlayerJoinReq): IApiPlayerJoinRes => {
     const { nickname } = data;
     const player = PlayerManager.Instance.createPlayer({ nickname, connection });
     connection.playerId = player.id;
 
+    PlayerManager.Instance.syncPlayers();
+
     return {
         player: PlayerManager.Instance.getPlayerView(player),
+    };
+});
+
+server.setApi(ApiMsgEnum.ApiPlayerList, (connection: Connection, data: IApiPlayerListReq): IApiPlayerListRes => {
+    return {
+        list: PlayerManager.Instance.getPlayersView(),
     };
 });
 

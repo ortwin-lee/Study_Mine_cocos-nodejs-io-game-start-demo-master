@@ -12,25 +12,21 @@ export interface IRoom {
 export interface IApiPlayerJoinReq {
     nickname: string;
 }
-
 export interface IApiPlayerJoinRes {
     player: IPlayer;
 }
 
 export interface IApiPlayerListReq {}
-
 export interface IApiPlayerListRes {
     list: IPlayer[];
 }
 
 export interface IApiRoomListReq {}
-
 export interface IApiRoomListRes {
     list: IRoom[];
 }
 
 export interface IApiRoomCreateReq {}
-
 export interface IApiRoomCreateRes {
     room: IRoom;
 }
@@ -38,11 +34,12 @@ export interface IApiRoomCreateRes {
 export interface IApiRoomJoinReq {
     rid: number;
 }
-
 export interface IApiRoomJoinRes {
     room: IRoom;
 }
 
 export interface IApiRoomLeaveReq {}
-
 export interface IApiRoomLeaveRes {}
+
+export interface IApiGameStartReq {}
+export interface IApiGameStartRes {}

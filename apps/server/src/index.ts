@@ -2,6 +2,8 @@ import { PlayerManager } from "./Biz/PlayerManager";
 import { RoomManager } from "./Biz/RoomManager";
 import {
     ApiMsgEnum,
+    IApiGameStartReq,
+    IApiGameStartRes,
     IApiPlayerJoinReq,
     IApiPlayerJoinRes,
     IApiPlayerListReq,
@@ -83,6 +85,12 @@ server.setApi(ApiMsgEnum.ApiRoomCreate, (connection: Connection, data: IApiRoomC
     }
 });
 
+server.setApi(ApiMsgEnum.ApiRoomList, (connection: Connection, data: IApiRoomListReq): IApiRoomListRes => {
+    return {
+        list: RoomManager.Instance.getRoomsView(),
+    };
+});
+
 server.setApi(ApiMsgEnum.ApiRoomJoin, (connection: Connection, { rid }: IApiRoomJoinReq): IApiRoomJoinRes => {
     if (connection.playerId) {
         const room = RoomManager.Instance.joinRoom(rid, connection.playerId);
@@ -122,10 +130,26 @@ server.setApi(ApiMsgEnum.ApiRoomLeave, (connection: Connection, data: IApiRoomLe
     }
 });
 
-server.setApi(ApiMsgEnum.ApiRoomList, (connection: Connection, data: IApiRoomListReq): IApiRoomListRes => {
-    return {
-        list: RoomManager.Instance.getRoomsView(),
-    };
+server.setApi(ApiMsgEnum.ApiGameStart, (connection: Connection, data: IApiGameStartReq): IApiGameStartRes => {
+    if (connection.playerId) {
+        const player = PlayerManager.Instance.idMapPlayer.get(connection.playerId);
+        if (player) {
+            const rid = player.rid;
+            if (rid) {
+                RoomManager.Instance.startRoom(rid);
+                PlayerManager.Instance.syncPlayers();
+                RoomManager.Instance.syncRooms();
+                RoomManager.Instance.syncRoom(rid);
+                return {};
+            } else {
+                throw new Error("玩家不在房间");
+            }
+        } else {
+            throw new Error("玩家不存在");
+        }
+    } else {
+        throw new Error("未登录");
+    }
 });
 
 server

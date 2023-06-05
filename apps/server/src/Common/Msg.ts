@@ -1,20 +1,24 @@
 import { IPlayer, IRoom } from "./Api";
 import { IClientInput } from "./State";
 
-export interface MsgClientSync {
+export interface IMsgClientSync {
     input: IClientInput;
     frameId: number;
 }
 
-export interface MsgServerSync {
+export interface IMsgServerSync {
     inputs: IClientInput[];
     lastFrameId: number;
 }
 
-export interface MsgPlayerList {
+export interface IMsgPlayerList {
     list: IPlayer[];
 }
 
-export interface MsgRoomList {
+export interface IMsgRoomList {
     list: IRoom[];
+}
+
+export interface IMsgRoom {
+    room: IRoom;
 }

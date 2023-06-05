@@ -8,6 +8,8 @@ import {
     IApiPlayerListRes,
     IApiRoomCreateReq,
     IApiRoomCreateRes,
+    IApiRoomJoinReq,
+    IApiRoomJoinRes,
     IApiRoomListReq,
     IApiRoomListRes,
     PORT,
@@ -68,6 +70,23 @@ server.setApi(ApiMsgEnum.ApiRoomCreate, (connection: Connection, data: IApiRoomC
         if (room) {
             PlayerManager.Instance.syncPlayers();
             RoomManager.Instance.syncRooms();
+            return {
+                room: RoomManager.Instance.getRoomView(room),
+            };
+        } else {
+            throw new Error("房间不存在");
+        }
+    } else {
+        throw new Error("未登录");
+    }
+});
+
+server.setApi(ApiMsgEnum.ApiRoomJoin, (connection: Connection, { rid }: IApiRoomJoinReq): IApiRoomJoinRes => {
+    if (connection.playerId) {
+        const room = RoomManager.Instance.joinRoom(rid, connection.playerId);
+        if (room) {
+            PlayerManager.Instance.syncPlayers();
+            RoomManager.Instance.syncRoom(room.id);
             return {
                 room: RoomManager.Instance.getRoomView(room),
             };

@@ -42,6 +42,13 @@ export class RoomManager extends Singleton {
         }
     }
 
+    syncRoom(rid: number) {
+        const room = this.idMapRoom.get(rid);
+        if (room) {
+            room.sync();
+        }
+    }
+
     getRoomsView(rooms: Set<Room> = this.rooms): IRoom[] {
         return [...rooms].map(r => this.getRoomView(r));
     }

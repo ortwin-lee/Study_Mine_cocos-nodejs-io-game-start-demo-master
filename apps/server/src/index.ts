@@ -10,6 +10,8 @@ import {
     IApiRoomCreateRes,
     IApiRoomJoinReq,
     IApiRoomJoinRes,
+    IApiRoomLeaveReq,
+    IApiRoomLeaveRes,
     IApiRoomListReq,
     IApiRoomListRes,
     PORT,
@@ -92,6 +94,28 @@ server.setApi(ApiMsgEnum.ApiRoomJoin, (connection: Connection, { rid }: IApiRoom
             };
         } else {
             throw new Error("房间不存在");
+        }
+    } else {
+        throw new Error("未登录");
+    }
+});
+
+server.setApi(ApiMsgEnum.ApiRoomLeave, (connection: Connection, data: IApiRoomLeaveReq): IApiRoomLeaveRes => {
+    if (connection.playerId) {
+        const player = PlayerManager.Instance.idMapPlayer.get(connection.playerId);
+        if (player) {
+            const rid = player.rid;
+            if (rid) {
+                RoomManager.Instance.leaveRoom(rid, player.id);
+                PlayerManager.Instance.syncPlayers();
+                RoomManager.Instance.syncRooms();
+                RoomManager.Instance.syncRoom(rid);
+                return {};
+            } else {
+                throw new Error("玩家不在房间");
+            }
+        } else {
+            throw new Error("玩家不存在");
         }
     } else {
         throw new Error("未登录");

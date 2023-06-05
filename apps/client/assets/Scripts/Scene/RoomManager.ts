@@ -46,16 +46,15 @@ export class RoomManager extends Component {
         }
     }
 
-    // async handleCreateRoom() {
-    //     const { success, error, res } = await NetWorkManager.Instance.callApi(ApiMsgEnum.ApiRoomCreate, {});
-    //     if (!success) {
-    //         console.log(error);
-    //         return;
-    //     }
+    async handleLeaveRoom() {
+        const { success, error, res } = await NetWorkManager.Instance.callApi(ApiMsgEnum.ApiRoomLeave, {});
+        if (!success) {
+            console.log(error);
+            return;
+        }
 
-    //     DataManager.Instance.roomInfo = res.room;
+        DataManager.Instance.roomInfo = null;
 
-    //     console.log("DataManager.Instance.roomInfo", DataManager.Instance.roomInfo);
-    //     director.loadScene(SceneEnum.Room);
-    // }
+        director.loadScene(SceneEnum.Hall);
+    }
 }

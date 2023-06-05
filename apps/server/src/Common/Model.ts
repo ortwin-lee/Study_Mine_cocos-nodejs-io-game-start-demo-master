@@ -7,6 +7,8 @@ import {
     IApiRoomCreateRes,
     IApiRoomJoinReq,
     IApiRoomJoinRes,
+    IApiRoomLeaveReq,
+    IApiRoomLeaveRes,
     IApiRoomListReq,
     IApiRoomListRes,
 } from "./Api";
@@ -38,6 +40,11 @@ export interface IModel {
         [ApiMsgEnum.ApiRoomJoin]: {
             req: IApiRoomJoinReq;
             res: IApiRoomJoinRes;
+        };
+
+        [ApiMsgEnum.ApiRoomLeave]: {
+            req: IApiRoomLeaveReq;
+            res: IApiRoomLeaveRes;
         };
     };
 

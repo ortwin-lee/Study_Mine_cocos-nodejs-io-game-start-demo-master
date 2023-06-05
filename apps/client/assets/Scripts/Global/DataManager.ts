@@ -1,6 +1,6 @@
 import { Node, Prefab, SpriteFrame } from "cc";
 import Singleton from "../Base/Singleton";
-import { EntityTypeEnum, IBullet, IClientInput, IState, InputTypeEnum } from "../Common";
+import { EntityTypeEnum, IBullet, IClientInput, IRoom, IState, InputTypeEnum } from "../Common";
 import { ActorManager } from "../Entity/Actor/ActorManager";
 import { JoyStickManager } from "../UI/JoyStickManager";
 import { BulletManager } from "../Entity/Bullet/BulletManager";
@@ -25,6 +25,7 @@ export default class DataManager extends Singleton {
 
     myPlayerId = 1;
     frameId = 1;
+    roomInfo: IRoom;
 
     stage: Node;
     jm: JoyStickManager;

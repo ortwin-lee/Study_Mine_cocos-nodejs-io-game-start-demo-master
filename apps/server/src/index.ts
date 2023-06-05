@@ -1,5 +1,17 @@
 import { PlayerManager } from "./Biz/PlayerManager";
-import { ApiMsgEnum, IApiPlayerJoinReq, IApiPlayerJoinRes, IApiPlayerListReq, IApiPlayerListRes, PORT } from "./Common";
+import { RoomManager } from "./Biz/RoomManager";
+import {
+    ApiMsgEnum,
+    IApiPlayerJoinReq,
+    IApiPlayerJoinRes,
+    IApiPlayerListReq,
+    IApiPlayerListRes,
+    IApiRoomCreateReq,
+    IApiRoomCreateRes,
+    IApiRoomListReq,
+    IApiRoomListRes,
+    PORT,
+} from "./Common";
 import { Connection, MyServer } from "./Core";
 import { symlinkCommon } from "./Utils";
 import { WebSocketServer } from "ws";
@@ -46,6 +58,30 @@ server.setApi(ApiMsgEnum.ApiPlayerJoin, (connection: Connection, data: IApiPlaye
 server.setApi(ApiMsgEnum.ApiPlayerList, (connection: Connection, data: IApiPlayerListReq): IApiPlayerListRes => {
     return {
         list: PlayerManager.Instance.getPlayersView(),
+    };
+});
+
+server.setApi(ApiMsgEnum.ApiRoomCreate, (connection: Connection, data: IApiRoomCreateReq): IApiRoomCreateRes => {
+    if (connection.playerId) {
+        const newRoom = RoomManager.Instance.createRoom();
+        const room = RoomManager.Instance.joinRoom(newRoom.id, connection.playerId);
+        if (room) {
+            PlayerManager.Instance.syncPlayers();
+            RoomManager.Instance.syncRooms();
+            return {
+                room: RoomManager.Instance.getRoomView(room),
+            };
+        } else {
+            throw new Error("房间不存在");
+        }
+    } else {
+        throw new Error("未登录");
+    }
+});
+
+server.setApi(ApiMsgEnum.ApiRoomList, (connection: Connection, data: IApiRoomListReq): IApiRoomListRes => {
+    return {
+        list: RoomManager.Instance.getRoomsView(),
     };
 });
 

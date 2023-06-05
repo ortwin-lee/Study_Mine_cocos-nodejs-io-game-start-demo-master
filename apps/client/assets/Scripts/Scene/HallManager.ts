@@ -1,7 +1,10 @@
-import { _decorator, Component, instantiate, Node, Prefab } from "cc";
+import { _decorator, Component, director, instantiate, Node, Prefab } from "cc";
 import { NetWorkManager } from "../Global/NetWorkManager";
-import { ApiMsgEnum, IApiPlayerListRes } from "../Common";
+import { ApiMsgEnum, IApiPlayerListRes, IApiRoomListRes } from "../Common";
 import { PlayerManager } from "../UI/PlayerManager";
+import DataManager from "../Global/DataManager";
+import { SceneEnum } from "../Enum";
+import { RoomManager } from "../UI/RoomManager";
 const { ccclass, property } = _decorator;
 
 @ccclass("HallManager")
@@ -12,17 +15,26 @@ export class HallManager extends Component {
     @property(Prefab)
     playerPrefab: Node;
 
+    @property(Node)
+    roomContainer: Node;
+
+    @property(Prefab)
+    roomPrefab: Node;
+
     onLoad() {
         NetWorkManager.Instance.listenMsg(ApiMsgEnum.MsgPlayerList, this.renderPlayer, this);
+        NetWorkManager.Instance.listenMsg(ApiMsgEnum.MsgRoomList, this.renderRoom, this);
     }
 
     start() {
         this.playerContainer.destroyAllChildren();
         this.getPlayers();
+        this.getRooms();
     }
 
     onDestroy() {
         NetWorkManager.Instance.unlistenMsg(ApiMsgEnum.MsgPlayerList, this.renderPlayer, this);
+        NetWorkManager.Instance.unlistenMsg(ApiMsgEnum.MsgRoomList, this.renderRoom, this);
     }
 
     async getPlayers() {
@@ -32,7 +44,7 @@ export class HallManager extends Component {
             return;
         }
 
-        console.log("res", res);
+        console.log("players", res.list);
 
         this.renderPlayer(res);
     }
@@ -53,5 +65,48 @@ export class HallManager extends Component {
             const node = this.playerContainer.children[i];
             node.getComponent(PlayerManager).init(data);
         }
+    }
+
+    async getRooms() {
+        const { success, error, res } = await NetWorkManager.Instance.callApi(ApiMsgEnum.ApiRoomList, {});
+        if (!success) {
+            console.log(error);
+            return;
+        }
+
+        console.log("rooms", res.list);
+
+        this.renderRoom(res);
+    }
+
+    renderRoom({ list }: IApiRoomListRes) {
+        for (const child of this.roomContainer.children) {
+            child.active = false;
+        }
+
+        while (this.roomContainer.children.length < list.length) {
+            const node = instantiate(this.roomPrefab);
+            node.active = false;
+            node.setParent(this.roomContainer);
+        }
+
+        for (let i = 0; i < list.length; i++) {
+            const data = list[i];
+            const node = this.roomContainer.children[i];
+            node.getComponent(RoomManager).init(data);
+        }
+    }
+
+    async handleCreateRoom() {
+        const { success, error, res } = await NetWorkManager.Instance.callApi(ApiMsgEnum.ApiRoomCreate, {});
+        if (!success) {
+            console.log(error);
+            return;
+        }
+
+        DataManager.Instance.roomInfo = res.room;
+
+        console.log("DataManager.Instance.roomInfo", DataManager.Instance.roomInfo);
+        director.loadScene(SceneEnum.Room);
     }
 }

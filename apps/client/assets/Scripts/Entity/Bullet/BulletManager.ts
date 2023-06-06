@@ -1,4 +1,4 @@
-import { IVec2, _decorator, instantiate, math } from "cc";
+import { IVec2, Tween, Vec3, _decorator, math, tween } from "cc";
 import { EntityTypeEnum, IBullet } from "../../Common";
 import { EntityManager } from "../../Base/EntityManager";
 import { EntityStateEnum, EventEnum } from "../../Enum";
@@ -14,6 +14,9 @@ export class BulletManager extends EntityManager {
     type: EntityTypeEnum;
     id: number;
 
+    private _targetPos: Vec3;
+    private _tween: Tween<unknown>;
+
     init(data: IBullet) {
         this.type = data.type;
         this.id = data.id;
@@ -22,14 +25,35 @@ export class BulletManager extends EntityManager {
 
         this.state = EntityStateEnum.Idle;
         this.node.active = false;
+        this._targetPos = undefined;
 
         EventManager.Instance.on(EventEnum.ExplosionBorn, this.handleExplosionBorn, this);
     }
 
     render(data: IBullet) {
-        this.node.active = true;
-        const { direction, position } = data;
-        this.node.setPosition(position.x, position.y);
+        this.renderPos(data);
+        this.renderDirection(data);
+    }
+
+    renderPos(data: IBullet) {
+        const { position } = data;
+        const newPos = new Vec3(position.x, position.y);
+        if (!this._targetPos) {
+            this.node.setPosition(newPos);
+            this._targetPos = new Vec3(newPos);
+            this.node.active = true;
+        } else if (!this._targetPos.equals(newPos)) {
+            this._tween?.stop();
+            this.node.setPosition(newPos);
+            this._targetPos.set(newPos);
+            this._tween = tween(this.node)
+                .to(0.1, { position: this._targetPos })
+                .start();
+        }
+    }
+
+    renderDirection(data: IBullet) {
+        const { direction } = data;
 
         const rad = Math.atan2(direction.y, direction.x);
         const angle = math.toDegree(rad);

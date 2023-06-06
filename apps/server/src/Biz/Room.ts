@@ -1,4 +1,4 @@
-import { ApiMsgEnum, EntityTypeEnum, IClientInput, IMsgClientSync, IState } from "../Common";
+import { ApiMsgEnum, EntityTypeEnum, IClientInput, IMsgClientSync, IState, InputTypeEnum } from "../Common";
 import { Connection } from "../Core";
 import { Player } from "./Player";
 import { PlayerManager } from "./PlayerManager";
@@ -9,6 +9,8 @@ export class Room {
     players: Set<Player> = new Set();
 
     pendingInput: IClientInput[] = [];
+
+    lastTime: number;
 
     constructor(rid: number) {
         this.id = rid;
@@ -70,6 +72,10 @@ export class Room {
         const timer1 = setInterval(() => {
             this.sendServerMsg();
         }, 100);
+
+        const timer2 = setInterval(() => {
+            this.timePast();
+        }, 16);
     }
 
     sync() {
@@ -93,5 +99,16 @@ export class Room {
                 inputs,
             });
         }
+    }
+
+    timePast() {
+        const now = process.uptime();
+        const dt = now - (this.lastTime ?? now);
+        this.pendingInput.push({
+            type: InputTypeEnum.TimePast,
+            dt,
+        });
+
+        this.lastTime = now;
     }
 }

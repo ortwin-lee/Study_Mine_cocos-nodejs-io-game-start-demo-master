@@ -1,6 +1,6 @@
 import { _decorator } from "cc";
 import Singleton from "../Base/Singleton";
-import { IModel, PORT, strCode, strDecode } from "../Common";
+import { ApiMsgEnum, IModel, PORT, binaryDecode, binaryEncode, strCode, strDecode } from "../Common";
 
 interface IItem {
     cb: Function;
@@ -22,7 +22,7 @@ export class NetWorkManager extends Singleton {
     port = PORT;
     ws: WebSocket;
 
-    private map: Map<string, Array<IItem>> = new Map();
+    private map: Map<ApiMsgEnum, Array<IItem>> = new Map();
 
     connect() {
         return new Promise((resolve, reject) => {
@@ -48,9 +48,7 @@ export class NetWorkManager extends Singleton {
             };
             this.ws.onmessage = e => {
                 try {
-                    const ta = new Uint8Array(e.data);
-                    const str = strDecode(ta);
-                    const json = JSON.parse(str);
+                    const json = binaryDecode(e.data);
                     const { name, data } = json;
 
                     if (this.map.has(name)) {
@@ -90,14 +88,7 @@ export class NetWorkManager extends Singleton {
             name,
             data,
         };
-        // await new Promise(res => setTimeout(res, 2000));
-        const str = JSON.stringify(msg);
-        const code = strCode(str);
-        const buffer = new ArrayBuffer(code.length);
-        const dataView = new DataView(buffer);
-        for (let index = 0; index < code.length; index++) {
-            dataView.setUint8(index, code[index]);
-        }
+        const dataView = binaryEncode(name, data);
         this.ws.send(dataView.buffer);
     }
 

@@ -1,9 +1,5 @@
 export const toFixed = (num: number, digit: number = 4) => Math.floor(num * 10 ** digit) / 10 ** digit;
 
-export const strencode = (str: string) => {
-    let byteArray: number[] = [];
-};
-
 export const strCode = (str: string): Uint8Array => {
     let byteArray: number[] = [];
     for (let i = 0; i < str.length; i++) {

@@ -9,13 +9,14 @@ import { BulletManager } from "../Entity/Bullet/BulletManager";
 import { ObjectPoolManager } from "../Global/ObjectPoolManager";
 import { NetWorkManager } from "../Global/NetWorkManager";
 import EventManager from "../Global/EventManager";
+import { deepCopy } from "../Utils";
 const { ccclass } = _decorator;
 
 @ccclass("BattleManager")
 export class BattleManager extends Component {
     private _stage: Node;
     private _ui: Node;
-
+    private _pendingMsg: IMsgClientSync[] = [];
     private _shouldUpdate = false;
 
     onLoad() {}
@@ -143,11 +144,22 @@ export class BattleManager extends Component {
             frameId: DataManager.Instance.frameId++,
         };
         NetWorkManager.Instance.sendMsg(ApiMsgEnum.MsgClientSync, msg);
+
+        if (input.type === InputTypeEnum.ActorMove) {
+            DataManager.Instance.applyInput(input);
+            this._pendingMsg.push(msg);
+        }
     }
 
-    handleServerSync({ inputs }: IMsgServerSync) {
+    handleServerSync({ inputs, lastFrameId }: IMsgServerSync) {
+        DataManager.Instance.state = DataManager.Instance.lastState;
         for (const input of inputs) {
             DataManager.Instance.applyInput(input);
+        }
+        DataManager.Instance.lastState = deepCopy(DataManager.Instance.state);
+        this._pendingMsg = this._pendingMsg.filter(msg => msg.frameId > lastFrameId);
+        for (const msg of this._pendingMsg) {
+            DataManager.Instance.applyInput(msg.input);
         }
     }
 }

@@ -1,6 +1,6 @@
 import { _decorator } from "cc";
 import Singleton from "../Base/Singleton";
-import { IModel, PORT } from "../Common";
+import { IModel, PORT, strCode, strDecode } from "../Common";
 
 interface IItem {
     cb: Function;
@@ -32,6 +32,7 @@ export class NetWorkManager extends Singleton {
             }
 
             this.ws = new WebSocket(`ws://localhost:${this.port}`);
+            this.ws.binaryType = "arraybuffer";
             this.ws.onopen = () => {
                 this.isConnected = true;
                 resolve(true);
@@ -47,9 +48,11 @@ export class NetWorkManager extends Singleton {
             };
             this.ws.onmessage = e => {
                 try {
-                    console.log("onmessage", e.data);
-                    const json = JSON.parse(e.data);
+                    const ta = new Uint8Array(e.data);
+                    const str = strDecode(ta);
+                    const json = JSON.parse(str);
                     const { name, data } = json;
+
                     if (this.map.has(name)) {
                         this.map.get(name).forEach(({ cb, ctx }) => {
                             cb.call(ctx, data);
@@ -88,7 +91,14 @@ export class NetWorkManager extends Singleton {
             data,
         };
         // await new Promise(res => setTimeout(res, 2000));
-        this.ws.send(JSON.stringify(msg));
+        const str = JSON.stringify(msg);
+        const code = strCode(str);
+        const buffer = new ArrayBuffer(code.length);
+        const dataView = new DataView(buffer);
+        for (let index = 0; index < code.length; index++) {
+            dataView.setUint8(index, code[index]);
+        }
+        this.ws.send(dataView.buffer);
     }
 
     listenMsg<T extends keyof IModel["msg"]>(name: T, cb: { (args: IModel["msg"][T]): void }, ctx: unknown) {

@@ -1,6 +1,6 @@
 import { Node, Prefab, SpriteFrame } from "cc";
 import Singleton from "../Base/Singleton";
-import { EntityTypeEnum, IBullet, IClientInput, IRoom, IState, InputTypeEnum } from "../Common";
+import { EntityTypeEnum, IBullet, IClientInput, IRoom, IState, InputTypeEnum, toFixed } from "../Common";
 import { ActorManager } from "../Entity/Actor/ActorManager";
 import { JoyStickManager } from "../UI/JoyStickManager";
 import { BulletManager } from "../Entity/Bullet/BulletManager";
@@ -86,8 +86,8 @@ export default class DataManager extends Singleton {
                 actor.direction.x = x;
                 actor.direction.y = y;
 
-                actor.position.x += x * dt * ACTOR_SPEED;
-                actor.position.y += y * dt * ACTOR_SPEED;
+                actor.position.x += toFixed(x * dt * ACTOR_SPEED);
+                actor.position.y += toFixed(y * dt * ACTOR_SPEED);
 
                 break;
             }
@@ -129,8 +129,8 @@ export default class DataManager extends Singleton {
                         ) {
                             actor.hp -= BULLET_DAMAGE;
                             EventManager.Instance.emit(EventEnum.ExplosionBorn, bullet.id, {
-                                x: (actor.position.x + bullet.position.x) / 2,
-                                y: (actor.position.y + bullet.position.y) / 2,
+                                x: toFixed((actor.position.x + bullet.position.x) / 2),
+                                y: toFixed((actor.position.y + bullet.position.y) / 2),
                             });
                             bullets.splice(i, 1);
                             break;
@@ -139,8 +139,8 @@ export default class DataManager extends Singleton {
                 }
 
                 for (const bullet of bullets) {
-                    bullet.position.x += bullet.direction.x * dt * BULLET_SPEED;
-                    bullet.position.y += bullet.direction.y * dt * BULLET_SPEED;
+                    bullet.position.x += toFixed(bullet.direction.x * dt * BULLET_SPEED);
+                    bullet.position.y += toFixed(bullet.direction.y * dt * BULLET_SPEED);
                 }
             }
         }

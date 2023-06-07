@@ -21,3 +21,7 @@ export const deepCopy = (obj: any) => {
 
     return res;
 };
+
+export const randomBySeed = (seed: number) => {
+    return (seed * 9301 + 49297) % 233280;
+};

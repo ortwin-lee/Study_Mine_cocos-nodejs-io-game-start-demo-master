@@ -6,6 +6,7 @@ import { JoyStickManager } from "../UI/JoyStickManager";
 import { BulletManager } from "../Entity/Bullet/BulletManager";
 import EventManager from "./EventManager";
 import { EventEnum } from "../Enum";
+import { randomBySeed } from "../Utils";
 
 const ACTOR_SPEED = 100;
 const BULLET_SPEED = 600;
@@ -71,6 +72,7 @@ export default class DataManager extends Singleton {
         ],
         bullets: [],
         nextBulletId: 1,
+        seed: 1,
     };
 
     applyInput(input: IClientInput) {
@@ -127,7 +129,10 @@ export default class DataManager extends Singleton {
                             (actor.position.x - bullet.position.x) ** 2 + (actor.position.y - bullet.position.y) ** 2 <
                             (ACTOR_RADIUS + BULLET_RADIUS) ** 2
                         ) {
-                            actor.hp -= BULLET_DAMAGE;
+                            const random = randomBySeed(this.state.seed);
+                            this.state.seed = random;
+                            const damage = random / 233280 >= 0.5 ? BULLET_DAMAGE * 2 : BULLET_DAMAGE;
+                            actor.hp -= damage;
                             EventManager.Instance.emit(EventEnum.ExplosionBorn, bullet.id, {
                                 x: toFixed((actor.position.x + bullet.position.x) / 2),
                                 y: toFixed((actor.position.y + bullet.position.y) / 2),

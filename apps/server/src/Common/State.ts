@@ -27,6 +27,7 @@ export interface IState {
     actors: IActor[];
     bullets: IBullet[];
     nextBulletId: number;
+    seed: number;
 }
 
 export interface IActorMove {
